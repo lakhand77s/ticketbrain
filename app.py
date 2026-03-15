@@ -72,14 +72,14 @@ def delete_ticket(ticket_id):
     return jsonify({'success': True})
 
 def generate_summary(data):
-    from google import genai
-    client = genai.Client(api_key=os.getenv('GOOGLE_API_KEY'))
-    prompt = "Summarize this ticket for a CEO in 2-3 lines. Ticket: " + str(data['subject']) + " Type: " + str(data['type']) + " Module: " + str(data['module']) + " Description: " + str(data['description']) + " Be direct and concise."
-    response = client.models.generate_content(
-        model='gemini-2.0-flash',
-        contents=prompt
-    )
-    return response.text
+    try:
+        from google import genai
+        client = genai.Client(api_key=os.getenv('GOOGLE_API_KEY'))
+        prompt = "Summarize this ticket for a CEO in 2-3 lines. Ticket: " + str(data['subject']) + " Type: " + str(data['type']) + " Module: " + str(data['module']) + " Description: " + str(data['description'])
+        response = client.models.generate_content(model='gemini-2.0-flash', contents=prompt)
+        return response.text
+    except Exception:
+        return str(data['subject']) + " — " + str(data['type']) + " ticket in " + str(data['module']) + " module. Priority: " + str(data['priority']) + "."
 
 def create_app():
     init_db()
