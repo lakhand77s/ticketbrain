@@ -75,25 +75,9 @@ def generate_summary(data):
     import google.generativeai as genai
     genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
     model = genai.GenerativeModel('gemini-1.5-flash')
-    response = model.generate_content(f"""Summarize this ticket for a CEO in 2-3 lines.
-Ticket: {data['subject']}
-Type: {data['type']}
-Module: {data['module']}
-Description: {data['description']}
-Be direct and concise.""")
+    prompt = "Summarize this ticket for a CEO in 2-3 lines. Ticket: " + str(data['subject']) + " Type: " + str(data['type']) + " Module: " + str(data['module']) + " Description: " + str(data['description']) + " Be direct and concise."
+    response = model.generate_content(prompt)
     return response.text
-            
-Ticket: {data['subject']}
-Type: {data['type']}
-Module: {data['module']}
-Description: {data['description']}
-
-Give a clear, concise summary. Keep it under 3 lines. Be direct."""
-        }]
-    )
-    return message.choices[0].message.content
-
-import os
 
 def create_app():
     init_db()
