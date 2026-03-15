@@ -72,12 +72,16 @@ def delete_ticket(ticket_id):
     return jsonify({'success': True})
 
 def generate_summary(data):
-    message = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        max_tokens=300,
-        messages=[{
-            "role": "user",
-            "content": f"""You are a product manager assistant. Summarize this ticket for a CEO in 2-3 lines.
+    import google.generativeai as genai
+    genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
+    model = genai.GenerativeModel('gemini-1.5-flash')
+    response = model.generate_content(f"""Summarize this ticket for a CEO in 2-3 lines.
+Ticket: {data['subject']}
+Type: {data['type']}
+Module: {data['module']}
+Description: {data['description']}
+Be direct and concise.""")
+    return response.text
             
 Ticket: {data['subject']}
 Type: {data['type']}
