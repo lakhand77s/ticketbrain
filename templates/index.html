@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TicketBrain — CEO Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #09090e;
+  --surface: #0f0f17;
+  --surface2: #16161f;
+  --surface3: #1c1c28;
+  --border: #252535;
+  --border2: #2f2f45;
+  --accent: #5b5ef4;
+  --accent-dim: rgba(91,94,244,0.12);
+  --green: #22c55e;
+  --green-dim: rgba(34,197,94,0.12);
+  --amber: #f59e0b;
+  --amber-dim: rgba(245,158,11,0.12);
+  --red: #ef4444;
+  --red-dim: rgba(239,68,68,0.12);
+  --text: #e2e2f0;
+  --text-2: #9494b0;
+  --text-3: #52526a;
+  --sans: 'Plus Jakarta Sans', sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 14px; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+}
+
+/* SUBTLE GRID */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(91,94,244,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91,94,244,0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── HEADER ─── */
+.header {
+  position: sticky; top: 0; z-index: 50;
+  height: 56px;
+  background: rgba(9,9,14,0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 28px;
+}
+
+.logo {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 17px; font-weight: 800; letter-spacing: -0.4px;
+}
+
+.logo-mark {
+  width: 30px; height: 30px;
+  background: var(--accent);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+}
+
+.logo-text { color: var(--text); }
+.logo-text span { color: var(--accent); }
+
+.header-right { display: flex; align-items: center; gap: 16px; }
+
+.header-date {
+  font-size: 12px; color: var(--text-3);
+  font-family: var(--mono);
+}
+
+.btn-new {
+  height: 34px; padding: 0 16px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: 8px;
+  font-family: var(--sans); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: opacity 0.15s, transform 0.15s;
+  display: flex; align-items: center; gap: 6px;
+}
+.btn-new:hover { opacity: 0.88; transform: translateY(-1px); }
+
+/* ─── PAGE ─── */
+.page {
+  position: relative; z-index: 1;
+  max-width: 1360px; margin: 0 auto;
+  padding: 24px 28px 48px;
+}
+
+/* ─── STATS ─── */
+.stats {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 14px; margin-bottom: 24px;
+}
+
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  position: relative; overflow: hidden;
+  min-height: 110px;
+}
+
+.stat-top-bar {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px;
+}
+
+.stat.default .stat-top-bar { background: var(--accent); }
+.stat.amber .stat-top-bar   { background: var(--amber); }
+.stat.green .stat-top-bar   { background: var(--green); }
+.stat.red .stat-top-bar     { background: var(--red); }
+
+.stat-label {
+  font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--text-2); font-weight: 600; margin-bottom: 10px;
+  white-space: nowrap;
+}
+
+.stat-value {
+  font-size: 38px; font-weight: 800; line-height: 1;
+  color: var(--text); font-variant-numeric: tabular-nums;
+}
+
+.stat.amber .stat-value { color: var(--amber); }
+.stat.green .stat-value { color: var(--green); }
+.stat.red   .stat-value { color: var(--red); }
+
+/* ─── TABS ─── */
+.tab-bar {
+  display: flex; gap: 2px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px; padding: 3px;
+  width: fit-content; margin-bottom: 18px;
+}
+
+.tab {
+  padding: 7px 18px;
+  border-radius: 8px; border: none; background: none;
+  font-family: var(--sans); font-size: 13px; font-weight: 500;
+  color: var(--text-2); cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tab.active { background: var(--accent); color: #fff; font-weight: 600; }
+.tab:hover:not(.active) { color: var(--text); }
+
+/* ─── TABLE CARD ─── */
+.table-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden;
+}
+
+.table-card-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.table-card-title {
+  font-size: 14px; font-weight: 700; color: var(--text);
+}
+
+.table-card-count {
+  font-size: 12px; color: var(--text-2);
+  background: var(--surface3);
+  padding: 3px 10px; border-radius: 20px;
+}
+
+/* ─── TABLE ─── */
+.tbl { width: 100%; border-collapse: collapse; }
+
+.tbl thead th {
+  padding: 10px 14px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--text-3); font-weight: 600;
+  white-space: nowrap;
+}
+
+.tbl tbody tr {
+  border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background 0.12s;
+}
+
+.tbl tbody tr:last-child { border-bottom: none; }
+.tbl tbody tr:hover { background: var(--surface2); }
+
+.tbl tbody td {
+  padding: 13px 14px;
+  vertical-align: middle;
+  font-size: 13px;
+}
+
+/* column widths */
+.col-no     { width: 80px; }
+.col-sub    { min-width: 240px; }
+.col-module { width: 110px; }
+.col-type   { width: 140px; }
+.col-pri    { width: 90px; }
+.col-status { width: 110px; }
+.col-appr   { width: 110px; }
+.col-date   { width: 130px; }
+
+.cell-no {
+  font-family: var(--mono); font-size: 12px;
+  font-weight: 500; color: var(--accent);
+  white-space: nowrap;
+}
+
+.cell-subject { font-weight: 600; color: var(--text); line-height: 1.4; }
+.cell-sub     { font-size: 11px; color: var(--text-2); margin-top: 3px; }
+
+/* badges */
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 3px 9px; border-radius: 5px;
+  font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+
+.b-module  { background: var(--accent-dim); color: #8b8ef8; }
+.b-bug     { background: var(--red-dim);    color: #f87171; }
+.b-req     { background: var(--amber-dim);  color: #fbbf24; }
+.b-usab    { background: var(--green-dim);  color: #4ade80; }
+.b-other   { background: var(--surface3);   color: var(--text-2); }
+
+.b-assigned { background: var(--accent-dim); color: #8b8ef8; }
+.b-progress { background: var(--amber-dim);  color: #fbbf24; }
+.b-done     { background: var(--green-dim);  color: #4ade80; }
+.b-pending  { background: var(--surface3);   color: var(--text-2); }
+
+.b-appr-pending  { background: var(--amber-dim); color: #fbbf24; }
+.b-appr-approved { background: var(--green-dim); color: #4ade80; }
+.b-appr-rejected { background: var(--red-dim);   color: #f87171; }
+
+.dot {
+  display: inline-block; width: 7px; height: 7px;
+  border-radius: 50%; margin-right: 6px;
+}
+.dot-high   { background: var(--red);   box-shadow: 0 0 5px var(--red); }
+.dot-medium { background: var(--amber); }
+.dot-low    { background: var(--green); }
+
+.date-cell {
+  font-family: var(--mono); font-size: 11px; color: var(--text-3);
+  white-space: nowrap;
+}
+
+/* ─── EMPTY ─── */
+.empty {
+  padding: 56px 20px; text-align: center;
+}
+.empty-icon { font-size: 36px; opacity: 0.2; margin-bottom: 10px; }
+.empty-txt  { font-size: 13px; color: var(--text-3); }
+
+/* ─── PAGINATION ─── */
+.pager {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+}
+.pager-info { font-size: 12px; color: var(--text-3); font-family: var(--mono); }
+.pager-btns { display: flex; gap: 4px; }
+
+.pg {
+  min-width: 30px; height: 30px; padding: 0 6px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface2); color: var(--text-2);
+  font-family: var(--mono); font-size: 12px;
+  cursor: pointer; transition: all 0.12s;
+  display: flex; align-items: center; justify-content: center;
+}
+.pg:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.pg.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.pg:disabled { opacity: 0.25; cursor: not-allowed; }
+
+/* ─── OVERLAY ─── */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(6px);
+  z-index: 100;
+  align-items: center; justify-content: center;
+}
+.overlay.open { display: flex; }
+
+/* ─── ADD MODAL ─── */
+.add-modal {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  width: 540px; max-height: 92vh; overflow-y: auto;
+  padding: 26px;
+  animation: up 0.18s ease;
+}
+
+@keyframes up {
+  from { opacity:0; transform: translateY(12px) scale(0.97); }
+  to   { opacity:1; transform: translateY(0) scale(1); }
+}
+
+.modal-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 22px;
+}
+.modal-title { font-size: 17px; font-weight: 700; }
+.modal-x {
+  width: 30px; height: 30px; border-radius: 7px;
+  border: 1px solid var(--border); background: none;
+  color: var(--text-2); font-size: 15px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.12s;
+}
+.modal-x:hover { border-color: var(--red); color: var(--red); }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.fg-full { grid-column: 1 / -1; }
+
+.fg label {
+  display: block; font-size: 11px; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--text-2);
+  font-weight: 600; margin-bottom: 5px;
+}
+
+.fg input, .fg select, .fg textarea {
+  width: 100%;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 9px 12px;
+  font-family: var(--sans); font-size: 13px; color: var(--text);
+  outline: none; transition: border-color 0.15s;
+}
+
+.fg input:focus, .fg select:focus, .fg textarea:focus {
+  border-color: var(--accent);
+}
+
+.fg select option { background: var(--surface2); }
+.fg textarea { height: 78px; resize: none; }
+
+.check-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 13px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; cursor: pointer; grid-column: 1 / -1;
+}
+.check-row input { accent-color: var(--accent); width: 15px; height: 15px; }
+.check-row label { font-size: 13px; color: var(--text); cursor: pointer; font-weight: 500; }
+
+.btn-submit {
+  width: 100%; height: 42px; margin-top: 6px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: 9px;
+  font-family: var(--sans); font-size: 13px; font-weight: 700;
+  cursor: pointer; letter-spacing: 0.3px;
+  transition: opacity 0.15s;
+  grid-column: 1 / -1;
+}
+.btn-submit:hover { opacity: 0.88; }
+.btn-submit:disabled { background: var(--surface3); color: var(--text-3); cursor: not-allowed; }
+
+/* ─── DETAIL MODAL ─── */
+.detail-modal {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  width: 660px; max-height: 92vh; overflow-y: auto;
+  animation: up 0.18s ease;
+}
+
+.dm-header {
+  padding: 22px 26px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+}
+
+.dm-tno {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--accent); font-weight: 500; margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+.dm-subject { font-size: 19px; font-weight: 800; line-height: 1.3; }
+.dm-badges  { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+
+.dm-body {
+  padding: 22px 26px;
+  display: flex; flex-direction: column; gap: 18px;
+}
+
+.dm-section-label {
+  font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--text-3); font-weight: 700; margin-bottom: 7px;
+}
+
+.dm-desc {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 9px; padding: 13px 15px;
+  font-size: 13px; line-height: 1.7; color: var(--text);
+}
+
+.dm-ai {
+  background: var(--accent-dim);
+  border: 1px solid rgba(91,94,244,0.25);
+  border-radius: 9px; padding: 13px 15px;
+  font-size: 13px; line-height: 1.7; color: var(--text);
+}
+
+.dm-footer {
+  padding: 16px 26px;
+  border-top: 1px solid var(--border);
+  background: var(--surface2);
+  border-radius: 0 0 16px 16px;
+  display: flex; gap: 10px;
+}
+
+.btn-approve {
+  flex: 1; height: 40px;
+  background: var(--green); color: #fff; border: none;
+  border-radius: 9px; font-family: var(--sans); font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: opacity 0.15s;
+}
+.btn-approve:hover { opacity: 0.85; }
+
+.btn-reject {
+  flex: 1; height: 40px;
+  background: transparent; color: var(--red);
+  border: 1px solid var(--red); border-radius: 9px;
+  font-family: var(--sans); font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: all 0.15s;
+}
+.btn-reject:hover { background: var(--red); color: #fff; }
+
+.btn-del {
+  height: 40px; padding: 0 18px;
+  background: transparent; color: var(--text-3);
+  border: 1px solid var(--border); border-radius: 9px;
+  font-family: var(--sans); font-size: 13px;
+  cursor: pointer; transition: all 0.15s;
+}
+.btn-del:hover { border-color: var(--red); color: var(--red); }
+
+.banner-ok  {
+  background: var(--green-dim); border: 1px solid rgba(34,197,94,0.25);
+  border-radius: 9px; padding: 11px 14px;
+  color: var(--green); font-weight: 700; font-size: 13px; text-align: center;
+}
+.banner-no  {
+  background: var(--red-dim); border: 1px solid rgba(239,68,68,0.25);
+  border-radius: 9px; padding: 11px 14px;
+  color: var(--red); font-weight: 700; font-size: 13px; text-align: center;
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-mark">⚡</div>
+    <div class="logo-text">Ticket<span>Brain</span></div>
+  </div>
+  <div class="header-right">
+    <div class="header-date" id="hDate"></div>
+    <button class="btn-new" onclick="openAdd()">+ Add Ticket</button>
+  </div>
+</header>
+
+<!-- PAGE -->
+<div class="page">
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat default">
+      <div class="stat-top-bar"></div>
+      <div class="stat-label">Total Tickets</div>
+      <div class="stat-value" id="sTotal">0</div>
+    </div>
+    <div class="stat amber">
+      <div class="stat-top-bar"></div>
+      <div class="stat-label">Pending</div>
+      <div class="stat-value" id="sPending">0</div>
+    </div>
+    <div class="stat green">
+      <div class="stat-top-bar"></div>
+      <div class="stat-label">Approved</div>
+      <div class="stat-value" id="sApproved">0</div>
+    </div>
+    <div class="stat red">
+      <div class="stat-top-bar"></div>
+      <div class="stat-label">Rejected</div>
+      <div class="stat-value" id="sRejected">0</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-bar">
+    <button class="tab active" onclick="switchTab('active',this)">Active</button>
+    <button class="tab" onclick="switchTab('pending',this)">Pending</button>
+    <button class="tab" onclick="switchTab('approved',this)">Approved</button>
+    <button class="tab" onclick="switchTab('rejected',this)">Rejected</button>
+    <button class="tab" onclick="switchTab('all',this)">All</button>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-card">
+    <div class="table-card-header">
+      <div class="table-card-title" id="tTitle">Active Tickets</div>
+      <div class="table-card-count" id="tCount">0 tickets</div>
+    </div>
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th class="col-no">Ticket No</th>
+          <th class="col-sub">Subject</th>
+          <th class="col-module">Module</th>
+          <th class="col-type">Type</th>
+          <th class="col-pri">Priority</th>
+          <th class="col-status">Status</th>
+          <th class="col-appr">Approval</th>
+          <th class="col-date">Date</th>
+        </tr>
+      </thead>
+      <tbody id="tBody"></tbody>
+    </table>
+    <div class="pager">
+      <div class="pager-info" id="pInfo">Showing 0 of 0</div>
+      <div class="pager-btns" id="pBtns"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="overlay" id="addOverlay" onclick="closeAdd(event)">
+  <div class="add-modal" onclick="event.stopPropagation()">
+    <div class="modal-hd">
+      <div class="modal-title">Add New Ticket</div>
+      <button class="modal-x" onclick="closeAdd()">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="fg">
+        <label>Ticket No</label>
+        <input id="f_no" type="text" placeholder="e.g. 6928">
+      </div>
+      <div class="fg">
+        <label>Module</label>
+        <select id="f_module">
+          <option value="">Select module</option>
+          <option>Exam</option><option>Fee</option><option>Attendance</option>
+          <option>Homework</option><option>Report Card</option>
+          <option>Management App</option><option>Parents App</option>
+          <option>Director Dashboard</option><option>Inventory</option><option>Other</option>
+        </select>
+      </div>
+      <div class="fg fg-full">
+        <label>Subject</label>
+        <input id="f_subject" type="text" placeholder="Brief title of the ticket">
+      </div>
+      <div class="fg">
+        <label>Type</label>
+        <select id="f_type">
+          <option value="">Select type</option>
+          <option>Bug Fix</option><option>Usability</option>
+          <option>New Requirement</option><option>Enhancement</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Priority</label>
+        <select id="f_priority">
+          <option value="">Select priority</option>
+          <option>High</option><option>Medium</option><option>Low</option>
+        </select>
+      </div>
+      <div class="fg fg-full">
+        <label>Status</label>
+        <select id="f_status">
+          <option>Assigned</option><option>In Progress</option>
+          <option>Done</option><option>Pending</option>
+        </select>
+      </div>
+      <div class="fg fg-full">
+        <label>Description</label>
+        <textarea id="f_desc" placeholder="Describe the issue or requirement in detail..."></textarea>
+      </div>
+      <div class="check-row">
+        <input type="checkbox" id="f_req">
+        <label for="f_req">Needs CEO Approval — mark for requirement tickets</label>
+      </div>
+      <button class="btn-submit" id="submitBtn" onclick="addTicket()">⚡ Generate AI Summary & Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay" id="detailOverlay" onclick="closeDetail(event)">
+  <div class="detail-modal" onclick="event.stopPropagation()">
+    <div class="dm-header">
+      <div style="flex:1">
+        <div class="dm-tno" id="d_no"></div>
+        <div class="dm-subject" id="d_subject"></div>
+        <div class="dm-badges" id="d_badges"></div>
+      </div>
+      <button class="modal-x" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="dm-body">
+      <div>
+        <div class="dm-section-label">📋 Original Request</div>
+        <div class="dm-desc" id="d_desc"></div>
+      </div>
+      <div>
+        <div class="dm-section-label">⚡ AI Summary for CEO</div>
+        <div class="dm-ai" id="d_ai"></div>
+      </div>
+      <div id="d_status_banner"></div>
+    </div>
+    <div class="dm-footer" id="d_footer"></div>
+  </div>
+</div>
+
+<script>
+let tickets = {{ tickets | tojson }};
+let tab = 'active';
+let page = 1;
+const PER = 20;
+let currentId = null;
+
+document.getElementById('hDate').textContent =
+  new Date().toLocaleDateString('en-IN', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+
+// ── HELPERS ──
+function filtered() {
+  switch(tab) {
+    case 'active':   return tickets.filter(t => t.status !== 'Done' && t.approved !== 0);
+    case 'pending':  return tickets.filter(t => t.is_requirement && t.approved === null);
+    case 'approved': return tickets.filter(t => t.approved === 1);
+    case 'rejected': return tickets.filter(t => t.approved === 0);
+    default:         return tickets;
+  }
+}
+
+function typeBadge(v) {
+  if (!v) return '';
+  const m = {'Bug Fix':'b-bug','New Requirement':'b-req','Usability':'b-usab'};
+  return `<span class="badge ${m[v]||'b-other'}">${v}</span>`;
+}
+
+function statusBadge(v) {
+  const m = {'Assigned':'b-assigned','In Progress':'b-progress','Done':'b-done','Pending':'b-pending'};
+  return `<span class="badge ${m[v]||'b-pending'}">${v||'—'}</span>`;
+}
+
+function apprBadge(t) {
+  if (!t.is_requirement) return '<span style="color:var(--text-3);font-size:12px">—</span>';
+  if (t.approved === null) return '<span class="badge b-appr-pending">Pending</span>';
+  if (t.approved === 1)    return '<span class="badge b-appr-approved">✓ Approved</span>';
+  return '<span class="badge b-appr-rejected">✕ Rejected</span>';
+}
+
+function priCell(v) {
+  const m = {'High':'dot-high','Medium':'dot-medium','Low':'dot-low'};
+  return v ? `<span class="dot ${m[v]||''}"></span>${v}` : '—';
+}
+
+// ── STATS ──
+function updateStats() {
+  document.getElementById('sTotal').textContent   = tickets.length;
+  document.getElementById('sPending').textContent  = tickets.filter(t => t.is_requirement && t.approved === null).length;
+  document.getElementById('sApproved').textContent = tickets.filter(t => t.approved === 1).length;
+  document.getElementById('sRejected').textContent = tickets.filter(t => t.approved === 0).length;
+}
+
+// ── RENDER TABLE ──
+function render() {
+  const data = filtered();
+  const total = data.length;
+  const pages = Math.ceil(total / PER);
+  const s = (page - 1) * PER;
+  const rows = data.slice(s, s + PER);
+
+  const titles = {active:'Active Tickets',pending:'Pending Approval',approved:'Approved Tickets',rejected:'Rejected Tickets',all:'All Tickets'};
+  document.getElementById('tTitle').textContent = titles[tab];
+  document.getElementById('tCount').textContent = `${total} ticket${total !== 1 ? 's' : ''}`;
+  document.getElementById('pInfo').textContent  = total ? `Showing ${s+1}–${Math.min(s+PER, total)} of ${total}` : 'No tickets';
+
+  const body = document.getElementById('tBody');
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="empty-icon">📭</div><div class="empty-txt">No tickets in this view</div></div></td></tr>`;
+  } else {
+    body.innerHTML = rows.map(t => `
+      <tr onclick="openDetail(${t.id})">
+        <td class="col-no"><span class="cell-no">#${t.ticket_no||'—'}</span></td>
+        <td class="col-sub">
+          <div class="cell-subject">${t.subject}</div>
+          ${t.ai_summary ? `<div class="cell-sub">${t.ai_summary.substring(0,80)}…</div>` : ''}
+        </td>
+        <td class="col-module">${t.module ? `<span class="badge b-module">${t.module}</span>` : '—'}</td>
+        <td class="col-type">${typeBadge(t.type)}</td>
+        <td class="col-pri" style="font-size:12px;white-space:nowrap">${priCell(t.priority)}</td>
+        <td class="col-status">${statusBadge(t.status)}</td>
+        <td class="col-appr">${apprBadge(t)}</td>
+        <td class="col-date"><span class="date-cell">${(t.created_at||'').replace(' ','<br>')}</span></td>
+      </tr>
+    `).join('');
+  }
+
+  // PAGINATION
+  const pb = document.getElementById('pBtns');
+  pb.innerHTML = '';
+  const prev = document.createElement('button');
+  prev.className = 'pg'; prev.textContent = '←';
+  prev.disabled = page === 1;
+  prev.onclick = () => { page--; render(); };
+  pb.appendChild(prev);
+
+  for (let i = 1; i <= pages; i++) {
+    const b = document.createElement('button');
+    b.className = 'pg' + (i === page ? ' active' : '');
+    b.textContent = i;
+    b.onclick = () => { page = i; render(); };
+    pb.appendChild(b);
+  }
+
+  const next = document.createElement('button');
+  next.className = 'pg'; next.textContent = '→';
+  next.disabled = page >= pages;
+  next.onclick = () => { page++; render(); };
+  pb.appendChild(next);
+}
+
+function switchTab(t, el) {
+  tab = t; page = 1;
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+// ── ADD MODAL ──
+function openAdd() { document.getElementById('addOverlay').classList.add('open'); }
+function closeAdd(e) {
+  if (!e || e.target === document.getElementById('addOverlay'))
+    document.getElementById('addOverlay').classList.remove('open');
+}
+
+async function addTicket() {
+  const subject = document.getElementById('f_subject').value.trim();
+  const desc    = document.getElementById('f_desc').value.trim();
+  if (!subject || !desc) { alert('Subject and Description are required.'); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = '⚡ Generating AI Summary…';
+
+  try {
+    const res = await fetch('/add_ticket', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        ticket_no: document.getElementById('f_no').value,
+        subject,
+        type:     document.getElementById('f_type').value,
+        priority: document.getElementById('f_priority').value,
+        status:   document.getElementById('f_status').value,
+        module:   document.getElementById('f_module').value,
+        description: desc,
+        is_requirement: document.getElementById('f_req').checked
+      })
+    });
+    if ((await res.json()).success) location.reload();
+  } catch { alert('Error. Please try again.'); }
+
+  btn.disabled = false; btn.textContent = '⚡ Generate AI Summary & Add';
+}
+
+// ── DETAIL MODAL ──
+function openDetail(id) {
+  const t = tickets.find(x => x.id === id);
+  if (!t) return;
+  currentId = id;
+
+  document.getElementById('d_no').textContent      = `TICKET #${t.ticket_no || id}`;
+  document.getElementById('d_subject').textContent = t.subject;
+  document.getElementById('d_desc').textContent    = t.description || 'No description.';
+  document.getElementById('d_ai').textContent      = t.ai_summary  || 'No AI summary.';
+
+  document.getElementById('d_badges').innerHTML = `
+    ${t.module ? `<span class="badge b-module">${t.module}</span>` : ''}
+    ${typeBadge(t.type)} ${statusBadge(t.status)}
+    ${t.priority ? `<span style="font-size:12px;white-space:nowrap">${priCell(t.priority)}</span>` : ''}
+  `;
+
+  const banner = document.getElementById('d_status_banner');
+  banner.innerHTML = t.approved === 1 ? '<div class="banner-ok">✓ Approved by CEO</div>'
+                   : t.approved === 0 ? '<div class="banner-no">✕ Rejected</div>' : '';
+
+  const footer = document.getElementById('d_footer');
+  if (t.is_requirement && t.approved === null) {
+    footer.innerHTML = `
+      <button class="btn-approve" onclick="doApprove(${id})">✓ Approve</button>
+      <button class="btn-reject"  onclick="doReject(${id})">✕ Reject</button>
+      <button class="btn-del"     onclick="doDelete(${id})">Delete</button>
+    `;
+  } else {
+    footer.innerHTML = `<button class="btn-del" onclick="doDelete(${id})">Delete Ticket</button>`;
+  }
+
+  document.getElementById('detailOverlay').classList.add('open');
+}
+
+function closeDetail(e) {
+  if (!e || e.target === document.getElementById('detailOverlay'))
+    document.getElementById('detailOverlay').classList.remove('open');
+}
+
+async function doApprove(id) { await fetch(`/approve/${id}`,{method:'POST'}); location.reload(); }
+async function doReject(id)  { await fetch(`/reject/${id}`, {method:'POST'}); location.reload(); }
+async function doDelete(id)  {
+  if (!confirm('Delete this ticket?')) return;
+  await fetch(`/delete/${id}`, {method:'POST'}); location.reload();
+}
+
+// ── INIT ──
+updateStats();
+render();
+</script>
+</body>
+</html>
