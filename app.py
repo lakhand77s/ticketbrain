@@ -1,15 +1,12 @@
 import os
 from flask import Flask, render_template, request, jsonify
 from database import get_db, init_db
-from groq import Groq
 from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = Flask(__name__)
-
-client = Groq(api_key=os.getenv('GROQ_API_KEY'))
 
 init_db()
 @app.route('/')
