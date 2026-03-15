@@ -11,6 +11,7 @@ app = Flask(__name__)
 
 client = Groq(api_key=os.getenv('GROQ_API_KEY'))
 
+init_db()
 @app.route('/')
 def index():
     conn = get_db()
@@ -88,6 +89,13 @@ Give a clear, concise summary. Keep it under 3 lines. Be direct."""
     )
     return message.choices[0].message.content
 
+import os
+
+def create_app():
+    init_db()
+    return app
+
 if __name__ == '__main__':
     init_db()
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
